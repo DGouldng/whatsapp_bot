@@ -1,9 +1,32 @@
 import json
 import re
 from flask import Flask, request, jsonify
+from flask import Flask, request
 import requests
 
 app = Flask(__name__)
+
+VERIFY_TOKEN = "DGould"  # Replace with your verify token
+
+@app.route('/webhook', methods=['GET', 'POST'])
+def webhook():
+    if request.method == 'GET':
+        # Verification step
+        mode = request.args.get('hub.mode')
+        token = request.args.get('hub.verify_token')
+        challenge = request.args.get('hub.challenge')
+
+        if mode and token:
+            if mode == "subscribe" and token == VERIFY_TOKEN:
+                return challenge, 200  # Respond with the challenge to verify the endpoint
+            else:
+                return "Forbidden", 403
+    elif request.method == 'POST':
+        # Handle incoming webhook events here
+        data = request.get_json()
+        print("Webhook received:", data)
+        return "Event received", 200
+
 
 # List of admin phone numbers (replace with actual phone numbers)
 admin_numbers = ['2347040968349']
